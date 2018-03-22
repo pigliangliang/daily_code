@@ -71,48 +71,161 @@ for z in lz:
     print z
 if lz[0][1]==2:
     print 'df'
-
-5
-5 1 11 2 8
-3
-999 1000 1000
-3
-1 2 3
-7
-10 940 926 990 946 980 985
-10
-5 3 4 5 5 2 1 8 4 1
-15
-17 15 17 16 13 17 13 16 14 14 17 17 13 15 17
-20
-90 5 62 9 50 7 14 43 44 44 56 13 71 22 43 35 52 60 73 54
 '''
-import sys
-while 1:
-    r = raw_input().split()
-    n,w,h = int(r[0]), int(r[1]), int(r[2])
-    l = []
-    for i in range(n):
-        r = raw_input().split()
-        wi, hi = int(r[0]), int(r[1])
-        l.append((wi*hi, i, wi, hi))
-    sl = []
-    l = sorted(l)
-    y = (w*h, 0, w, h)
-    t = y
-    c = 0
-    for x in l:
-        i = x[1]
-        if x[0]>t[0] and x[2]>t[2] and x[3]>t[3]:
-            if x[0]>y[0] and x[2]>y[2] and x[3]>y[3]:
-                sl.append(x)
-                c += 1
-                if c>1:
-                    t = y
-                y = x
-            elif x[1]<y[1]:
-                sl[-1] = x
+#一道Python面试题目，开始以为是0，2，4，6
+#输出为6，6，6，6
+#个人理解：列表推导式中生成的是匿名函数，包含一个参数
+#所以循环遍历的匿名函数，
+# <function <lambda> at 0x10210e5f0>
+#<function <lambda> at 0x10210e668>
+#<function <lambda> at 0x10210e6e0>
+#<function <lambda> at 0x10210e758>
+#因为包含一个参数，故需要传参
+#for l in [lambda x:x*i for i in range(4)]:
+#   print l(2)
+'''
+def f(n):
+    while True:
+        yield n
+        n+=1
+cnt = f(4)
+for i in range(5):
+    print cnt.next()
 
-    print(len(sl))
-    print sl
-    print(" ".join([str(x[1] + 1) for x in sl])+" ")
+def simple_coroutine(a):
+    while True:
+        print('-> start')
+        b = yield a
+        print('-> recived', a, b)
+        c = yield a + b
+        print('-> recived', a, b, c)
+sc = simple_coroutine(5)
+
+print next(sc)#5
+print sc.send(6) #11
+print sc.send(7) # 5
+
+'''
+#阿里18校招编程题输入6个数，组成最大和最小时间
+#未完成最大时间部分
+'''
+n = int(raw_input())
+li = []
+while n!=0:
+    li.append(raw_input())
+    n -=1
+li.sort()
+if li[0]+li[1]>'24' or li[2]+li[3]>'59' or li[4]+li[5]>'59':
+    print 'N/A'#时间无效
+else:
+    li.insert(2,':')
+    li.insert(5,':')
+    print ''.join(li)#最小时间
+
+    #最大时间
+    s = []
+    if '2' in li:
+        for i in range(len(li)):
+            if li[i]>=0 and li[i]<=3:
+                s.append(li)
+                s.sort()
+                shi = '2'+s[0]
+                li.remove('2')
+                li.remove(s[0])
+            else:
+                break
+    elif '1' in li:
+        li.sort()
+        shi = '1'+li[-1]
+        li.remove('1')
+        li.pop()
+    elif '0' in li:
+        li.sort()
+        shi = '0'+ li[-1]
+        li.remove('0')
+        li.pop()
+    else:
+        print 'N/A'
+
+'''
+'''
+import threading
+import time
+
+
+def action(arg):
+    time.sleep(1)
+    print 'sub thread start! the thread name is {}'.format(threading.current_thread().getName())
+    print 'the arg is {}'.format(arg)
+    time.sleep(1)
+
+thread_list = []
+for i in range(4):
+    t = threading.Thread(target=action,args=(i,))
+    t .setDaemon(True)
+    thread_list.append(t)
+
+for t in thread_list:
+    t.start()
+for t in thread_list:
+    t.join()
+print '{} is end'.format(threading.current_thread().getName())
+
+'''
+#py闭包和装饰器
+'''
+def count():
+    a  = 1
+    b = 2
+    def sum():
+        c = 1
+        return a+c
+    return sum
+import time
+def decorator(func):
+    def wrapper(*args,**kwargs):
+        startime = time.time()
+        #func()
+        endtime = time.time()
+        print endtime - startime
+    return wrapper
+@decorator
+def func():
+    time.sleep(1)
+
+func()
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

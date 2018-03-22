@@ -609,9 +609,11 @@ while 1:
                 return seq
             else:
                 count += 1
-                seq.append(s[0][0])
                 p =s[0][1][0]
                 q =s[0][1][1]
+
+                seq.append(s[0][0])
+
                 operation(dict(s),count,p,q,seq)
     n,p,q = map(int,raw_input().split())
     enve = {}
@@ -620,14 +622,531 @@ while 1:
         size = map(int, raw_input().split())
         if  size not in enve.values() :
             enve[i] = size
-
             i +=1
-
         n -= 1
     ls = []
-
-    for e in enve.values():
-       print e[0]
-    #operation(enve,0,p,q,ls)
-    #print ''.join(map(str,ls))
+    operation(enve,0,p,q,ls)
+    print ' '.join(map(str,ls))
 '''
+#备考 京东2016实习题
+'''
+while 1:
+    import sys
+    import numpy as np
+    d,t = map(int,sys.stdin.readline().strip().split())
+    lt = [ ]
+    while d!=0:
+        lt.append(map(int,raw_input().split()))
+        d -= 1
+    d = np.array(lt)
+    minsum = sum(d[:,:1])[0]
+    maxsum = sum(d[:,1:])[0]
+    if t >maxsum or t<minsum:
+        print "No"
+    else:
+        print "Yes"
+        timesum = t - minsum
+        for l in lt:
+            if l[1] - l[0] >=timesum:
+                print l[0] + timesum
+                timesum = 0
+            else:
+                print l[1]
+                timesum -= l[1]
+'''
+#铺地砖（京东2016实习生真题）
+'''
+def calculator(n,m,a,count):
+    if a >=n and a>=m:
+        count +=1
+    elif a>=n and a<=m:
+        if m%a == 0:
+            count +=m/a
+        else:
+            count += m/a+1
+    elif a<=n and a>=m:
+        if n%a==0:
+            count += n/a
+        else:
+            count += n/a+1
+    else:
+        count+=1
+        calculator(n-a,m,a,count)
+        calculator(a,m-a,a,count)
+    print count
+'''
+#方法一思想是行列分别除以地砖的大小然后将结果乘积
+'''
+import numpy as np
+T = int(raw_input())
+while T!=0:
+    arr = np.array(map(int,raw_input().strip().split()))
+    res = np.where(arr[:2]%arr[2],arr[:2]/arr[2]+1,arr[:2]/arr[2] )
+    print np.multiply.reduce(res)
+    T-=1
+'''
+#方法二思想同上
+'''
+T = int(raw_input())
+while T!=0:
+    T-=1
+    n,m,a = map(int,raw_input().split())
+    print [n/a+1 if n%a else n/a][0]*[m/a+1 if m%a else m/a][0]
+'''
+#查找列表中大于某个值的元素
+'''
+import numpy as np
+def great_elem(list,m):
+    l = np.array(list)
+    print l[l>m]
+ls = [1,2,4,5,6,6,3,53,3,42,42,424,24,24,4326565,6546565,6536578]
+great_elem(ls,5)
+'''
+#python 迭代器
+#菲薄那也数列为例
+'''
+class Fib:
+    def __init__(self):
+        self.prev = 0
+        self.curr = 1
+    def __iter__(self):
+        return self
+    #内部迭代
+    def next(self):
+        value = self.curr
+        self.curr +=self.prev
+        self.prev = value
+        return value
+from itertools import islice
+f = Fib()
+print list(islice(f,0,2))
+'''
+#生成器
+#菲薄那也数列
+'''
+from itertools import islice
+def fib():
+    pre,curr = 0,1
+    while True:
+        yield curr
+        pre,curr = curr,curr+pre
+print list(islice(fib(),0,2))
+
+#练习
+def iter_someting():
+    li = [x for x in range(100)]
+    for i in li:
+        yield i
+it = iter_someting()
+from itertools import islice
+#问题是无法多次迭代
+#看结果：
+# [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+#[10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+print list(islice(it,0,10))
+print list(islice(it,0,10))
+'''
+#函数闭包问题
+'''
+flist = []
+
+for l in [lambda x:x*i for i in range(3)]:
+    print l
+for i in range(3):
+    def foo(x): print x + i
+    flist.append(foo)
+for f in flist:
+    f(2)
+'''
+#路径规划（京东2016实习生真题）
+'''
+start = raw_input()
+after = raw_input()
+def equal_row_or_col(start,after):
+    res = [True if x[0]==x[1] else False for x in  zip(start,after)]
+    if res[0]:
+        dis = int(after[1])-int(start[1])
+        d = abs(dis)
+        print abs(dis)
+        while d:
+            if dis>0:
+                print 'U'
+            else:
+                print 'D'
+            d -=1
+    elif res[1]:
+        dis = ord(after[0])-ord(start[0])
+        d = abs(dis)
+        print abs(dis)
+        while d:
+            if dis>0:
+                print 'R'
+            else:
+                print 'L'
+            d -=1
+def not_equal(start,after):
+    dis = map(abs, (ord(start[0]) - ord(after[0]), int(start[1]) - int(after[1])))
+    dis = min(dis)
+    s0 = ord(start[0]) + dis
+    s1 = int(start[1]) + dis
+    result = (s0,s1 ,dis)
+    return result
+if start[0]<after[0] and start[1]<after[1]:
+    val = not_equal(start,after)
+    start = (val[0],val[1])
+    dis = val[2]
+    while dis:
+        print "RU"
+        dis -=1
+    print start
+    equal_row_or_col(start,after)
+elif start[0]<after[0] and start[1]>after[1]:
+    val = not_equal(start,after)
+    start = (val[0],val[1])
+    dis = val[2]
+    while dis!=0:
+        print "RD"
+        dis -=1
+    equal_row_or_col(start,after)
+elif start[0]>after[0] and start[1]<after[1]:
+    val = not_equal(start, after)
+    start = (val[0], val[1])
+    dis = val[2]
+    while dis:
+        print "LD"
+        dis -=1
+    equal_row_or_col(start,after)
+else:
+    val = not_equal(start, after)
+    start = (val[0], val[1])
+    dis = val[2]
+    while dis:
+        print "LU"
+        dis -=1
+    equal_row_or_col(start, after)
+'''
+#协程
+'''
+def consumer():
+    r = ''
+    while True:
+        n = yield r#语句1
+        if not n:
+            return
+        print('[CONSUMER] Consuming %s...' % n)
+        r = '200 OK'
+
+def produce(c):
+    c.send(None)#预激活协程，使得协程暂停在语句1处
+    n = 0
+    while n < 5:
+        n = n + 1
+        print('[PRODUCER] Producing %s...'  n)
+        r = c.send(n)#激活协程，协程在语句1处开始向下继续执行
+                    #n的值作为语句1的值，本语句的值是yield 中参数r
+        print('[PRODUCER] Consumer return: %s' % r)
+    c.close()
+c = consumer()
+produce(c)
+'''
+#快速排序算法
+#quick sort
+'''
+def quickSort(L, low, high):
+    i = low
+    j = high
+
+    key = L[i]
+    while i<j:
+        while i<j and L[j]>=key:
+            j -=1
+        L[i]=L[j]
+        while i<j and L[i]<=key:
+            i +=1
+        L[j]=L[i]
+    L[i]=key
+
+    quickSort(L, low, i-1)
+    quickSort(L, j+1, high)
+    return L
+input = map(int,raw_input().split())
+print quickSort(input,0,len(input)-1)
+'''
+
+#提利昂的赏赐（百度2017秋招真题)
+'''
+n = int(raw_input())
+info = []
+while n!=0:
+    info.append(raw_input().split())
+    n -=1
+d = {}
+
+for i in info:
+    pcount=0
+    while i[1] >80 and i[5]>0:
+        pcount +=8000
+        break
+    while i[1]>85 and i[2]>80:
+        pcount +=4000
+        break
+    while i[1]>90:
+        pcount +=2000
+        break
+    while i[1]>85 and i[4]=='Y':
+        pcount +=1000
+        break
+    while i[2]>80 and i[3]=='Y':
+        pcount +=850
+        break
+    d[i[0]]=pcount
+d = sorted(d.items(),key=lambda d:d[1],reverse=True)
+
+for k in d:
+    print k
+
+'''
+
+#士兵队列（百度秋招真题）
+'''
+group = int(raw_input())
+info = []
+while group!=0:
+    num = raw_input()
+    info.append(map(int,raw_input().split()))
+    group -=1
+
+for i in info:
+    count = 1
+    max_key = i[0]
+    for r in range(1,len(i)):
+        if i[r]>max_key:
+            count +=1
+            max_key = i[r]
+    print count
+'''
+#异或（京东2017实习生真题）
+'''
+num = int(raw_input())
+f_num = raw_input()
+s_num = raw_input()
+res = [0 if x[0]==x[1] else 1 for x in zip(f_num,s_num)  ]
+res.reverse()
+count=0
+for i,v in enumerate(res):
+    if v==1:
+        count+=2**i
+print count
+'''
+#三子棋（京东2016实习生真题）
+'''
+while True:
+    r1=raw_input()
+    r2=raw_input()
+    r3=raw_input()
+    r = r1+r2+r3
+    if r1=='XXX' or r2=='XXX' or r3=='XXX':
+        print '1 won'
+    elif r1=='OOO' or r2=="OOO" or r3=='OOO':
+        print '2 won'
+    elif r1[0]+r2[1]+r3[2]=='XXX':
+        print '1 won'
+    elif r1[2]+r2[1]+r3[0]=="OOO":
+        print '2 won'
+
+    if '.' in r:
+        if r.count('X')>r.count('O'):
+            print '2'
+        else:
+            print '1'
+    else:
+        print 'draw'
+'''
+#python 反射机制
+'''imp = raw_input("请输入模块：")
+dd = __import__(imp)
+inp_func = raw_input("请输入要执行的函数")
+f = getattr(dd,inp_func,None)
+f()
+
+class A:
+    def __init__(self):
+        #self.name = 'pig'
+        self.age = '18'
+    def method(self):
+        print "method func"
+Instance = A()
+print getattr(Instance,'name','not find')
+r = hasattr(Instance,'sex')#判断实例是否有sex属性，没有返回false
+print r
+setattr(Instance,'sex','male')
+
+print hasattr(Instance,'sex')
+'''
+#快排
+'''
+def quicksort(l,low,high):
+    if low < high:
+        i = low
+        j = high
+        key = l[i]
+        while i<j:
+            while i<j and l[j]>=key:
+                j -=1
+            l[i]=l[j]
+            while i<j and l[i]<key:
+                i +=1
+            l[j]=l[i]
+
+        l[i]=key
+        quicksort(l,low,i-1)
+        quicksort(l,i+1,high)
+    return l
+l = [3,2,41,6,7,1,9,0]
+quicksort(l,0,len(l)-1)
+print l
+'''
+#折半查找
+'''
+def BinSearch(l,key,low,high):
+    mid = int((low+high)/2)
+    if key==l[mid]:
+        return l[mid]
+    if low>high:
+        return False
+    if key<mid:
+        return BinSearch(l,key,low,mid-1)
+    if key>mid:
+        return BinSearch(l,key,mid+1,high)
+
+l = [4, 13, 27, 38, 49, 49, 55, 65, 76, 97]
+ret = BinSearch(l, 76, 0, len(l)-1)
+print ret
+'''
+#归并排序O(nlogn)
+'''
+def merge_sort(l):
+    mid = len(l)/2
+    if len(l)==1:
+        return l
+    l_left = merge_sort(l[:mid])
+    l_right= merge_sort(l[mid:])
+    return merge(l_left,l_right)
+
+def merge(l_left,l_right):
+    result = []
+    while l_left and l_right:
+        if l_left[0]<=l_right[0]:
+            result.append(l_left.pop(0))
+        else:
+            result.append(l_right.pop(0))
+    return result+l_left+l_right
+
+array = [49,0,38,65,97,76,3,1]
+print merge_sort(array)
+'''
+#找数组中出现次数为1次的元素
+#字典统计法
+'''
+from collections import Counter
+l = [2,3,2,3,5,1,1]
+dict = Counter(l)
+for k,i in Counter(l).items():
+    if i==1:
+        print k
+        '''
+#print sorted(dict.items() ,key=lambda item:item[1])
+#列表计数
+'''for i in l:
+    if l.count(i)==1:
+        print i'''
+#异或，将所有数字做一遍异或即可
+#相同数字异或结果为零，所以元素出现一次
+#结果肯定不为零
+'''key = 0
+for i in l:
+    key ^=i
+print key
+'''
+'''
+n,m  = map(int,raw_input().split())
+price = map(int,raw_input().split())
+price.sort(reverse=True)
+profit = {}
+if n>m:
+
+    for i in range(1,m+1):
+        profit[price[i-1]]=i*price[i-1]
+    print sorted(profit.items(),key=lambda p:p[1],reverse=True)[0][0]
+else:
+    for i in range(1,n+1):
+        profit[price[i-1]]=i*price[i-1]
+    print sorted(profit.items(),key=lambda p:p[1],reverse=True)[0][0]
+'''
+'''
+n = int(raw_input())
+ch = raw_input()
+countx= 0
+for i in range(n):
+    subch = []
+    if ch[i]>='1' and ch[i]<='9':
+        if i-int(ch[i])<0 and i+int(ch[i])>n:
+            subch.extend(ch[0:n])
+        elif i-int(ch[i])<0:
+            subch.extend(ch[0:i+int(ch[i])])
+        elif i+int(ch[i])>n:
+            subch.extend(ch[i-int(ch[i]):n])
+
+        else:
+            subch.extend(ch[i-int(ch[i]):i+int(ch[i])])
+    if 'X' in subch:
+        countx +=subch.count('X')
+
+    else:
+        continue
+print countx
+
+n = int(raw_input())
+m = raw_input()
+c = 0
+for i in m:
+    if i >='1' and i<='9':
+        c += m[max(m.index(i)-int(i),0):min(len(m)-1,m.index(i)+int(i)+1)].count('X')
+    else:
+        continue
+print c
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
