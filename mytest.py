@@ -1,18 +1,28 @@
 # -*- coding:utf-8 -*-
-#l1 =['b','c','d','c','a','a']
+l1 =['b','c','d','c','a','a','d','b']
 #l2 = {}.fromkeys(l1).keys()
 #print(l2)
 
 #for i in l2:
 #   print(l1.count(i))
 #计数列表中的key出现的次数
-#from collections import  Counter
-#dict = Counter(l1)
-#print(dict)
+from collections import  Counter
+d = Counter(l1)
+#print(d)
 #print(len(Counter(l1)))
 #print(sorted(dict,key=lambda x :dict[x] ))
 #print(sorted(dict.values()))
-#print(sorted(dict.items(),key=lambda item:item[1]))
+l = sorted(d.items(),key=lambda item:(item[0],item[0]))
+#print(l)
+#k, v = zip(*l)
+#print k,v
+
+
+
+
+
+
+
 
 '''
 while True:
@@ -1117,36 +1127,681 @@ for i in m:
 print c
 
 '''
+#装饰器
+'''
+def w1(func):
+    def inner(*args,**kwargs):
+        print 'inner'
+        return func(*args,**kwargs)
+    return inner
+@w1
+def f1(*args,**kwargs):
+    print 'f1'
+
+def Before(request, kargs):
+    print 'before'
+
+
+def After(request, kargs):
+    print 'after'
+
+#带参数
+def Filter(before_func, after_func):
+    def outer(main_func):
+        def wrapper(request, kargs):
+
+            before_result = before_func(request, kargs)
+            if (before_result != None):
+                return before_result;
+
+            main_result = main_func(request, kargs)
+            if (main_result != None):
+                return main_result;
+
+            after_result = after_func(request, kargs)
+            if (after_result != None):
+                return after_result;
+
+        return wrapper
+
+    return outer
+
+
+@Filter(Before, After)
+def Index(request, kargs):
+    print 'index'
+
+
+Index('1','9')
+
+m,k = map(int,raw_input().split())
+l = map(int,raw_input().split())
+set(l)
+p = []
+for i in l:
+    for j in range(l.index(i)+1,m):
+        if abs(i -int(l[j]))==k:
+            p.append(i)
+            p.append(l[j])
+
+print len(set(p))
+
+m,n =map(int,raw_input().split())
+la = map(int,raw_input().split())
+lb = map(int,raw_input().split())
+seta = set(la)
+setb = set(lb)
+
+if m>n:
+    seta = set(lb)
+    setb = set(la)
+avga=float(sum(seta))/len(seta)
+avgb=float(sum(setb))/len(setb)
+def computor(seta,setb,avga):
+    for i in setb:
+        if i<avga:
+            continue
+        seta.add(i)
+        setb.remove(i)
+        break
+    return (float(sum(seta))/len(seta),float(sum(setb))/len(setb))
+ret = computor(seta,setb,avga)
+count = 1
+while ret[0]>avga and ret[1]>avgb:
+    count+=1
+    ret = computor(seta,setb,avga)
+    avga = ret[0]
+
+
+print count
+'''
+#python 多线程 演示gil锁
+'''
+import threading
+
+def profile(func):
+    def wrappere(*args,**kwargs):
+        import time
+        start = time.time()
+        func(*args,**kwargs)
+        end = time.time()
+        print "cost{}".format(end-start)
+    return wrappere
+
+def fib(n):
+    if n<=2:
+        return 1
+    return fib(n-1)+fib(n-2)
+
+@profile
+def nothead():
+    fib(35)
+    fib(35)
+thead_list=[]
+@profile
+def hasthead():
+    for i in range(2):
+        t = threading.Thread(target=fib,args=(35,))
+        #t.start()
+        thead_list.append(t)
+    for t in thead_list:
+        t.start()
+    for t in thead_list:
+        t.join()
+    
+    #main_thread = threading.currentThread()
+    #for t in threading.enumerate():
+    #    if t is main_thread:
+     #       continue
+     #   t.join()
+    
+nothead()
+hasthead()
+'''
+#py 多线程创建
+#方法一：将要执行的方法传递给thread构造方法
+'''
+import threading
+t = threading.Thread(target='',args=('',))
+t.start()
+
+#方法二：继承tread类，重写run方法
+import threading
+class MyThread(threading.Thread):
+    def __init__(self,arg):
+        super(MyThread,self).__init__()
+        self.arg=arg
+    def run(self):
+        import time
+        time.sleep(1)
+        print "the arg is {}".format(self.arg)
+for i in range(4):
+    t = MyThread(i)
+    t.start()
+print "{} is end".format(threading.currentThread().getName())
+'''
+
+#py 多线程同步机制
+#一、信号量机制，类似pv操作
+'''
+import time
+from random import random
+from threading import Thread,Semaphore
+
+sem = Semaphore(3)
+
+def foo(tid):
+    with sem:
+        print "{} acquie sem ".format(tid)
+        wait = random()*2
+        time.sleep(wait)
+    print '{} release sem'.format(tid)
+
+threads = []
+
+for i in range(5):
+    t = Thread(target=foo,args=(i,))
+    threads.append(t)
+    t.start()
+
+for t in threads:
+    t.join()
+'''
+#二Lock锁：相当于信号量为1
+'''
+import time
+from threading import Thread,Lock
+
+
+value = 0
+lock  = Lock()
+
+
+def getlock():
+    global value
+    with lock:
+        new_value = value+1
+        time.sleep(0.00001)
+        value = new_value
+
+threads = []
+
+for i in range(100):
+    t = Thread(target=getlock)
+    t.start()
+    threads.append(t)
+for t in threads:
+    t.join()
+print value
+
+'''
+#三 condition
+'''
+import threading
+import time
+
+
+def consumer(cond):
+    t = threading.currentThread()
+    with cond:
+        cond.wait()
+        print '{} resource is available'.format(t.name)
+
+
+def producer(cond):
+    t = threading.currentThread()
+    with cond:
+        print '{} making resource is available'.format(t.name)
+        cond.notifyAll()
+
+condition = threading.Condition()
+
+c1 = threading.Thread(name='c1',target=consumer,args=(condition,))
+c2 = threading.Thread(name='c1',target=consumer,args=(condition,))
+p  = threading.Thread(name='p',target=producer,args=(condition,))
+
+c1.start()
+time.sleep(1)
+c2.start()
+time.sleep(1)
+p.start()
+'''
+#四、event
+'''
+import time
+import threading
+from random import randint
+
+timeout = 2
+
+def consumer(event,l):
+    t = threading.currentThread()
+    while 1:
+        event_is_set = event.wait(timeout)
+        if event_is_set:
+            try:
+                integer = l.pop()
+                print '{} poped from list by {}'.format(integer,t.name)
+                event.clear()
+            except IndexError:
+                pass
+
+
+def producer(event,l):
+    t = threading.currentThread()
+    while 1:
+        integer = randint(10,100)
+        l.append(integer)
+        print '{} append to list by {}'.format(integer,t.name)
+        event.set()
+        time.sleep(1)
+
+event = threading.Event()
+l = []
+threads = []
+
+for name in ('c1','c2'):
+    t = threading.Thread(name=name,target=consumer,args=(event,l))
+    t.start()
+    threads.append(t)
+p = threading.Thread(name='producer',target=producer,args=(event,l))
+p.start()
+threads.append(p)
+for t in threads:
+    t.join()
+'''
+'''
+m = raw_input()
+s = raw_input()
+count = 0
+for t in s:
+    if t>='1' and t<='9':
+        left = s.index(t)-int(t)
+        right = s.index(t)+int(t)
+        count +=s[max(left,0):min(int(m),right)+1].count('X')
+        s =s.split(s[max(left,0):min(int(m),right)+1])[0]+s[max(left,0):min(int(m),right)+1].replace('X','U')+s.split(s[max(left,0):min(int(m),right)+1])[1]
+        print s
+print count
+
+'''
+#京东分堆编程题
+'''
+n,k = map(int,raw_input().split())
+
+if n % (2*k+1)<k :
+    heap = n/(2*k +1)*2
+else:
+    heap = n/(2*k+1)*2+1
+print heap
+
+'''
+#京东实习三子棋06年
+'''
+while True:
+    r1=raw_input()
+    r2=raw_input()
+    r3=raw_input()
+    r = r1+r2+r3
+
+    if r.count('X')-r.count('0') not in (0,1):
+        print 'x'
+        continue
+    line=[r1,r2,r3]
+    line.append(r1[0]+r2[1]+r3[2])
+    line.append(r3[0]+r2[1]+r1[2])
+    z = zip(r1,r2,r3)
+    for i in z:
+        line.extend(list(i))
+
+    if 'XXX' in line:
+        if r.count('X')-r.count('0')==1:
+            print '1 won'
+        else:
+            print 'x'
+        continue
+    if '000' in line:
+        if r.count('X')-r.count('0')==0:
+            print '2 won'
+        else:
+            print 'x'
+        continue
+    if '.' in r:
+        if r.count('X')-r.count('0')==1:
+            print '2'
+        else:
+            print '1'
+    else:
+        print 'draw'
+
+'''
+#py线程池
+'''
+import time
+import threading
+from random import random
+from Queue import Queue
+
+
+def double(n):
+    return n*2
+
+#创建线程
+class Worker(threading.Thread):
+    def __init__(self,queue):
+        super(Worker,self).__init__()
+        self._q = queue
+        self.daemon=True
+        self.start()
+
+    def run(self):
+        while True:
+            f,args,kwargs = self._q.get()
+            try:
+                print 'User:{}'.format(self.name)
+                print f(*args,**kwargs)
+            except Exception as e:
+                print e
+            self._q.task_done()
+
+#线程池
+class ThreadPool(object):
+    def __init__(self,num_t=5):
+        self._q = Queue(num_t)
+        for _ in range(num_t):
+            Worker(self._q)
+    def add_task(self,f,*args,**kwargs):
+        self._q.put((f,args,kwargs))
+    def wait_complete(self):
+        self._q.join()
+
+pool = ThreadPool()
+for _ in range(8):
+    wt = random()
+    pool.add_task(double,wt)
+    time.sleep(wt)
+pool.wait_complete()
+'''
+#Py进程
+'''
+import time
+import multiprocessing
+
+
+def profile(func):
+    def wrapper(*args,**kwargs):
+        start = time.time()
+        func(*args,**kwargs)
+        end = time.time()
+        print 'cost:{}'.format(end-start)
+    return wrapper
+
+def fib(n):
+    if n<=2:
+        return 1
+    return fib(n-1)+fib(n-2)
+
+
+@profile
+def nomultiprocess():
+    fib(35)
+    fib(35)
+
+@profile
+def hasmultiprocess():
+    
+    jobs = []
+    for i in range(2):
+        p = multiprocessing.Process(target=fib,args=(35,))
+        p.start()
+        jobs.append(p)
+    for p in jobs:
+        p.join()
+
+
+    
+    from multiprocessing import Pool
+    #from multiprocessing.dummy import Pool
+
+
+    pool = Pool(2)
+    pool.map(fib,[35]*2)
+nomultiprocess()
+hasmultiprocess()
+
+'''
+'''
+l = []
+r = int(raw_input())
+while r!=0:
+    r-=1
+    l.append(map(int,raw_input().split()))
+for i in range(len(l)):
+    l[i][1] = l[i][0]+l[i][1]
+l.sort()
+lcount = []
+print l
+i = 0
+while i<len(l):
+    count = 0
+    if i==len(l)-1:
+        break
+    else:
+        for j in range(i+1,len(l)):
+            if l[j][0] >=l[i][0] and l[j][0]<=l[i][1]:
+                count +=1
+            else:
+                break
+        lcount.append(count)
+        i =j
+        continue
+lcount.sort(reverse=True)
+print lcount
+print lcount[0]+lcount[1]+2
+
+'''
+
+#py 进程间通信
+
+#管道
+'''
+from multiprocessing import Process,Pipe
+
+
+def f(conn):
+    conn.send(['hello'])
+    conn.close()
+
+parent_conn,child_conn = Pipe()
+p = Process(target=f,args=(child_conn,))
+p.start()
+print parent_conn.recv()
+p.join()
 
 
 
+from multiprocessing import Pool,Process,Pipe
+from itertools import izip
+
+
+def spawn(f):
+    def func(pipe,item):
+        pipe.send(f(item))
+        pipe.close()
+
+    return func
+
+def parmap(f,items):
+    pipe = [Pipe() for _ in items]
+    proc = [Process(target=spawn(f),args=(child,item)) for item,(parent,child) in izip(items,pipe)]
+    [p.start() for p in proc]
+    [p.join() for p in proc]
+    return [parent.recv() for (parent,child) in pipe]
+
+class CalculateFib(object):
+    @classmethod
+    def fib(cls,n):
+        if n<=2:
+            return 1
+        return cls.fib(n-1) +cls.fib(n-2)
+    def parmap_run(self):
+        print parmap(self.fib,[35]*2)
+
+c = CalculateFib()
+c.parmap_run()
+'''
+#print   [{} for i in range(4)]
+'''
+import numpy as np
+import math
+a = np.array([1,2])
+b = np.array([3,4])
+d = math.sqrt(sum(np.power(a-b,2)))
+print(d)
+
+def distance(a,b):
+    pass
+
+
+#初始化节点k，假定k为3
+def Kmeans(dataset ,K):
+    set0 = set()
+
+    status = True
+    while status:
+        status = False
+        for i in range(len(dataset)):
+            d = {}
+            for  k in K:
+                dis = distance(dataset[i],k)
+                d[i]=dis
+            min(d,key=lambda x:d[x])
 
 
 
+class Dog(object):
+
+    def __init__(self,name):
+        self.name = name
+    @staticmethod
+    def eat(self):
+        print('{} is eating.'.format(self.name))
+
+dog = Dog('lulu')
+Dog.eat(dog)
+'''
+#单例模式
+'''
+class Singleton(object):
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls,'_instance'):
+            cls._instance=super(Singleton,cls).__new__(cls)
+        return cls._instance
+
+class MyClass(Singleton):
+    def __init__(self,name):
+        if name:
+            self.name=name
+a = MyClass('zhu')
+print(a.name)
+
+b = MyClass('b')
+print(b.name)
+print(a.name)
+
+print(a)
+print(b)
+
+'''
+#工厂模式
+'''
+inputs = raw_input()
+while True:
+    if inputs==inputs[::-1]:
+        print(len(inputs))
+        break
+    else:
+        inputs = inputs[:-1]
+
+''''''
+def zhishu(a,b):
+    count=0
+    flag = 0
+    for i in range(a+1,b):
+        for j in range(2,i):
+            if i%j==0:
+                flag=j
+                break
+            else:
+                flag=j
+                continue
+
+        if flag==i-1:
+            count +=1
+    #print(count)
+    return count
 
 
 
+inputs = int(raw_input())
+li = []
+while inputs:
+    li.append(raw_input())
+    inputs -=1
+li = map(int,li)
+#print(li)
+count = 0
+for i in li:
+    for j in li[li.index(i)+1:]:
+        #print(i,j)
+        count +=zhishu(i,j)
+print(count)
 
 
+n,k = map(int,raw_input().split())
+di = {}
+for i in range(n):
+    di[i]=int(raw_input())
 
+#print(di)
 
+#from collections import Counter
 
+r = sorted(di.items(),key=lambda x:x[1])[:2]
+if r[0][0]>r[1][0]:
+    print(r[1][1])
+    print(  r[0][1])
+else:
+    print(r[0][1])
+    print(r[1][1])
+'''
+'''
+class A:
+    def __init__(self):
+        pass
 
+    @staticmethod
+    def f():
+        pass
+    def g(self):
+        pass
+    @classmethod
+    def h(cls):
+        pass
+    @property
+    def t(self):
+        print('')
+a = A()
+a.t'''
+#小和问题
+'''a =[1,2,3,1,1]
+r = []
+def sort_min(l,loc):
+    sorted(l)
+    return l[:l.index(loc)]
+while len(a):
+    r.extend(sort_min(a,a[-1]))
+    a.pop()
+print(sum(r))'''
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#快排
 

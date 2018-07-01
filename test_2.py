@@ -195,24 +195,34 @@ def func():
 
 func()
 
+
+
+
+'''
+'''
+s1 = '+'
+s2 = 'rrr'
+print s1.join(s2)
+#输出：r+r+r
+print s1+s2
+
+
+import time
+import threading
+from random import random
+from Queue import Queue
+
+q = Queue()
+q.put('2')
+print q.get_nowait()
+
 '''
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+def dict2list(dic):#将字典转化为列表
+     keys = dic.keys()
+     vals = dic.values()
+     lst = [(key, val) for key, val in zip(keys, vals)]
+     return lst
 
 
 
